@@ -1,178 +1,104 @@
-🏎️ F1 Race Strategy & Regulations Assistant (RAG + LLM + FastF1)
+🏎️ F1 Race Strategy & Regulations Assistant
 
-An end-to-end Retrieval-Augmented Generation (RAG) system that combines official FIA documents, live timing/strategy data via FastF1, and historical results to answer complex Formula 1 questions.
+Ever wondered if an AI could explain Formula 1 race results, penalties, and strategy calls like an engineer in the paddock?
+This project does exactly that.
 
-This project showcases AI engineering, data engineering, and sports analytics, blending LLMs, vector databases, and structured APIs into one hybrid query system.
+It’s an end-to-end Retrieval-Augmented Generation (RAG) system that mixes:
 
-🚀 Features
+📄 FIA documents (stewards’ decisions, scrutineering, race classifications)
 
-Document Retrieval (RAG)
+⏱️ FastF1 live timing & strategy data (laps, stints, weather, safety cars)
 
-FIA scrutineering reports, stewards’ decisions, and race classification PDFs.
+🤖 Large Language Models (Mistral-7B via HuggingFace)
 
-Preprocessed into text chunks and embedded with HuggingFace models.
+Together, it can answer complex F1 questions — whether it’s about regulations or on-track performance.
 
-Stored in FAISS vectorstore for semantic search.
+🚀 What it can do
 
-Structured Data (FastF1)
+Ask about race results
+→ “Who finished top 3 in Australia 2025?”
+✅ Gets data straight from FastF1.
 
-Official race results (classification, DNFs, penalties).
+Ask about FIA decisions
+→ “Were there any yellow flag penalties?”
+✅ Reads and retrieves from FIA PDFs.
 
-Lap-by-lap timing data for any driver.
+Ask about driver performance
+→ “Show Hamilton’s lap times during the Safety Car.”
+✅ Combines FIA context + lap-by-lap FastF1 timing.
 
-Tyre stint analysis and pit stop strategies.
+🧩 How it works (in plain English)
 
-Weather conditions and safety car / VSC phases.
+Collect data
 
-Hybrid Query Engine
+FIA PDFs (official docs per race)
 
-Routes questions intelligently:
+FastF1 telemetry (laps, stints, results, weather)
 
-“Who finished top 3 in Australia 2025?” → FastF1
+(Optional) Ergast API for historical stats
 
-“Were there any yellow flag penalties?” → FIA PDFs (via RAG)
+Build knowledge base
 
-“Show Hamilton’s lap times during the Safety Car” → Combined
+PDFs are converted into text chunks → embedded with HuggingFace MiniLM
 
-Powered by Mistral-7B Instruct via HuggingFace Inference API.
+Everything is stored in a FAISS vector database
 
-Multi-Race Support
+Ask questions
 
-Currently supports Australia, China, and Japan 2025.
+The query engine decides:
 
-Modular design to easily add new GPs.
+If it’s about results/telemetry → FastF1
 
-Processed Exports
+If it’s about rules/penalties → FIA PDFs via RAG
 
-FIA PDFs → fia_docs_*.txt
+If it’s mixed → combines both
 
-FastF1 race results → ergast_clean.csv
+Get natural answers
 
-FastF1 laps → fastf1_laptimes.parquet
+Mistral-7B Instruct generates an answer
 
-Ergast / historical results (optional)
+Always backed by real FIA or FastF1 data
 
-
-data/
- ├── raw/           # FIA PDFs per race
- ├── processed/     # Cleaned .txt, .csv, .parquet outputs
- └── vectorstore/   # FAISS indexes (per race)
-
-src/
- ├── build_vectorstore.py   # Builds embeddings + FAISS
- ├── query_vectorstore.py   # Interactive Q&A
- └── pipelines/             # Modular pipeline components
-      ├── data_loader.py
-      ├── embedding_pipeline.py
-      ├── rag_pipeline.py
-      ├── vector_store.py
-      └── fastf1_pipeline.py
-
-
-🛠️ Tech Stack
-
-LLM / Embeddings
-
-HuggingFace Transformers
-
-Mistral-7B-Instruct (via HuggingFace Inference API)
-
-all-MiniLM-L6-v2 embeddings
-
-Vector Database
-
-FAISS
- for semantic search
-
-Data Sources
-
-FastF1
- for official timing, stints, weather
-
-FIA PDFs (scrutineering reports, stewards’ decisions, race results)
-
-Ergast API (optional historical data)
-
-Frameworks / Tools
-
-Python 3.11
-
-LangChain for document loaders & splitting
-
-Pandas for data wrangling
-
-Matplotlib for lap time & stint charts
-
-
-⚙️ How It Works
-
-Build Phase (build_vectorstore.py)
-
-Load FIA PDFs (data/raw/<race>/*.pdf).
-
-Load processed .txt, .csv, .parquet from FastF1/Ergast pipelines.
-
-Split into text chunks with RecursiveCharacterTextSplitter.
-
-Embed with HuggingFace MiniLM.
-
-Save FAISS vectorstore to vectorstore/<race>/.
-
-Query Phase (query_vectorstore.py)
-
-Load FAISS vectorstore(s).
-
-Accept user query.
-
-If query matches race results / stints / timing / weather → call FastF1 pipeline.
-
-Else → retrieve docs from FAISS and query Mistral LLM.
-
-Combine answers into one natural language response with sources.
-
-📊 Example Queries
-
+Example Queries
 Q: Who finished top 3 in Australia 2025?
 A: Lando Norris (McLaren), Max Verstappen (Red Bull), George Russell (Mercedes).
 
 Q: Were there any penalties for yellow flag infringements?
-A: FIA stewards investigated Alexander Albon and Lewis Hamilton. No further action was taken. (source: fia_docs_australia2025.pdf)
+A: Stewards investigated Alexander Albon and Lewis Hamilton. No further action was taken.
+(Source: FIA docs)
 
 Q: Show Hamilton’s lap times during the Safety Car.
-A: (Table of lap times 12–16 with reduced pace, pulled from FastF1 + FIA context).
+A: Lap 12–16 all ~1:52s (safety car pace).
 
-🔮 Possible Extensions
+🛠️ Tech Behind the Scenes
 
-Streamlit dashboard with tabs:
+LLM / Embeddings: HuggingFace, Mistral-7B Instruct, MiniLM-L6-v2
 
-FIA Doc Q&A (chatbot)
+Vector DB: FAISS for semantic search
 
-Race Results (tables)
+Data Sources: FastF1 timing feed, FIA PDFs, Ergast API
 
-Lap Charts (matplotlib/plotly)
+Frameworks: Python, LangChain, Pandas, Matplotlib
 
-Tyre Strategy Visuals (stint charts)
+🔮 What’s next
 
-Multi-GP comparisons (“Who won Australia and Japan 2025?”).
+A Streamlit dashboard to make it interactive (tables, charts, chatbot)
 
-Automated FIA scraping for live updates.
+Multi-race comparisons (“Who won Australia and Japan 2025?”)
 
-Local model fallback (Flan-T5, Falcon) to bypass HuggingFace quota.
+Auto-scraping FIA PDFs for live race weekends
 
-🎯 Skills Demonstrated
+Local model fallback (Flan-T5, Falcon) to avoid API limits
 
-LLM Applications: Retrieval-Augmented Generation (RAG), prompt design, hallucination control.
+🎯 Why this project matters
 
-Vector Search: FAISS indexing, HuggingFace embeddings, document chunking.
+This project is more than F1 geekery.
+It’s a real-world example of how AI engineers can:
 
-Data Engineering: Pipeline building, PDF parsing, text serialization, cache management.
+Blend unstructured text (regulations) with structured telemetry
 
-APIs & External Data: FastF1 timing feed, FIA PDFs, Ergast API.
+Build trustworthy, explainable hybrid AI systems
 
-MLOps Awareness: Caching, error handling, quota management, scalability.
+Apply RAG techniques to solve domain-specific problems
 
-Visualization: Lap time charts, stint plots, weather overlays.
-
-📌 Why This Project
-
-This project demonstrates how AI engineers can blend LLMs with structured data to solve domain-specific problems. By combining regulatory text retrieval (RAG) with live telemetry APIs, it shows how to build a trustworthy, hybrid AI system that is accurate, explainable, and production-ready.
+Think of it as a blueprint for AI systems that can be both smart and reliable.
